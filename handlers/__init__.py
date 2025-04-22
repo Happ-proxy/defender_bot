@@ -6,7 +6,7 @@ from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, F
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
 from .start import start_handler
-from .message import message_handler
+from .message import message_handler, docs_handler
 
 
 # Пользовательский фильтр для проверки, что отправитель не бот
@@ -45,6 +45,12 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
     dp.callback_query.register(
         partial(language_callback_handler, pool=pool),
         lambda c: c.data.startswith("lang_"),
+    )
+
+    dp.message.register(
+        docs_handler,
+        ChatTypeGroup(),
+        Command(commands=["docs", "info"])
     )
 
     # Сообщения в группах и супергруппах (не от ботов)
