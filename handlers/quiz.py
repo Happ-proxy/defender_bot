@@ -208,6 +208,10 @@ async def poll_handler(
 
     state = dp.fsm.get_context(bot=bot, chat_id=chat_id, user_id=user_id)
     user_data = await state.get_data()
+    user_state = await state.get_state()
+
+    if user_state is None:
+        return
 
     if not user_data.get("has_answered", False):
         lang = user_data.get("language", "en")

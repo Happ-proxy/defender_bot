@@ -135,7 +135,13 @@ async def check_poll_timeout(
 ) -> None:
     """Проверяет, ответил ли пользователь на опрос за отведенное время."""
     await asyncio.sleep(config.QUIZ_ANSWER_TIMEOUT)
+
     user_data = await state.get_data()
+    user_state = await state.get_state()
+
+    if user_state is None:
+        return
+
     if not user_data.get("has_answered", False):
         lang = user_data.get("language", "en")
         group_chat_id = user_data.get("group_chat_id")
