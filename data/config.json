@@ -9,22 +9,22 @@
       },
       "answers": {
         "en": [
-          "Proxy",
-          "VPN protocol",
-          "Phone brand",
-          "Racing tires"
+          "Transport‑layer proxy protocol",
+          "VPN tunneling protocol",
+          "TLS extension for traffic obfuscation",
+          "Symmetric encryption algorithm"
         ],
         "ru": [
-          "Прокси",
-          "VPN-протокол",
-          "Фирма телефона",
-          "Гоночные шины"
+          "Прокси‑протокол транспортного уровня",
+          "VPN‑туннельный протокол",
+          "TLS‑расширение для маскировки трафика",
+          "Симметричный алгоритм шифрования"
         ],
         "zh": [
-          "代理",
-          "VPN 协议",
-          "手机品牌",
-          "赛车轮胎"
+          "传输层代理协议",
+          "VPN 隧道协议",
+          "用于混淆流量的 TLS 扩展",
+          "对称加密算法"
         ]
       },
       "correct_index": 0
@@ -38,51 +38,51 @@
       },
       "answers": {
         "en": [
-          "WireGuard",
-          "HTTP",
-          "FTP",
-          "SMTP"
+          "QUIC (HTTP/3 transport)",
+          "TLS 1.3",
+          "L2TP",
+          "SSH‑2 (Secure Shell)"
         ],
         "ru": [
-          "WireGuard",
-          "HTTP",
-          "FTP",
-          "SMTP"
+          "QUIC (HTTP/3 transport)",
+          "TLS 1.3",
+          "L2TP",
+          "SSH‑2 (защищённая оболочка)"
         ],
         "zh": [
-          "WireGuard",
-          "HTTP",
-          "FTP",
-          "SMTP"
+          "QUIC（HTTP/3 传输协议）",
+          "TLS 1.3",
+          "L2TP",
+          "SSH‑2（安全外壳协议）"
         ]
       },
-      "correct_index": 0
+      "correct_index": 2
     },
     {
       "id": 3,
       "question": {
-        "en": "What is Xray-core?",
-        "ru": "Что такое Xray-core?",
-        "zh": "Xray-core 是什么？"
+        "en": "What is Xray‑core?",
+        "ru": "Что такое Xray‑core?",
+        "zh": "Xray‑core 是什么？"
       },
       "answers": {
         "en": [
-          "Tool for configuring VPN and proxy",
-          "Web browser",
-          "Social network",
-          "Programming language"
+          "Modular transport engine implementing multiple protocols",
+          "Modular deep‑packet‑inspection firewall framework",
+          "High‑throughput QUIC/HTTP‑3 edge accelerator",
+          "Lightweight service‑mesh sidecar runtime for Kubernetes"
         ],
         "ru": [
-          "Инструмент для настройки VPN и прокси",
-          "Веб-браузер",
-          "Социальная сеть",
-          "Язык программирования"
+          "Модульный транспортный движок, реализующий разные протоколы",
+          "Модульный DPI‑фреймворк для межсетевого экранирования",
+          "Высокопроизводительный ускоритель QUIC/HTTP‑3 для CDN‑периметра",
+          "Лёгкий сайдкар‑рантайм сервис‑меша для Kubernetes"
         ],
         "zh": [
-          "配置 VPN 和代理的工具",
-          "网络浏览器",
-          "社交网络",
-          "编程语言"
+          "支持多种协议的模块化传输引擎",
+          "模块化深度包检测防火墙框架",
+          "用于 CDN 边缘的高吞吐量 QUIC/HTTP‑3 加速器",
+          "Kubernetes 服务网格的轻量级 sidecar 运行时"
         ]
       },
       "correct_index": 0
@@ -91,7 +91,7 @@
       "id": 4,
       "question": {
         "en": "Which section is NOT part of the main configuration?",
-        "ru": "Какой раздел НЕ входит в основной конфиг?",
+        "ru": "Какой раздел НЕ входит в основной конфиг Xray?",
         "zh": "哪个部分不属于主要配置？"
       },
       "answers": {
@@ -126,19 +126,19 @@
       "answers": {
         "en": [
           "Encryption of traffic",
-          "Determining the type of traffic (HTTP, TLS, etc.)",
+          "Determining the type of traffic",
           "Load balancing",
           "Error logging"
         ],
         "ru": [
           "Шифрование трафика",
-          "Определение типа трафика (HTTP, TLS и т.д.)",
+          "Определение типа трафика",
           "Балансировка нагрузки",
           "Логирование ошибок"
         ],
         "zh": [
           "流量加密",
-          "确定流量类型（HTTP、TLS 等）",
+          "确定流量类型",
           "负载均衡",
           "错误日志记录"
         ]
@@ -148,31 +148,31 @@
     {
       "id": 6,
       "question": {
-        "en": "What is reverse used for?",
-        "ru": "Для чего используется reverse?",
-        "zh": "reverse 用于什么？"
+        "en": "What is the purpose of the \"reverse\" section in an Xray configuration?",
+        "ru": "Для чего предназначен раздел «reverse» в конфигурации Xray?",
+        "zh": "在 Xray 配置中，“reverse” 区段的作用是什么？"
       },
       "answers": {
         "en": [
-          "Reverse proxy server",
-          "Load balancing",
-          "DNS encryption",
-          "Protocol switching"
+          "Force IP strategy",
+          "Enable smux",
+          "Enable XTLS direct",
+          "Proxy for NAT node"
         ],
         "ru": [
-          "Обратный прокси-сервер",
-          "Балансировка нагрузки",
-          "Шифрование DNS",
-          "Смена протокола"
+          "Исп. IP вместо домена",
+          "Включить smux",
+          "Включить XTLS direct",
+          "Обратный прокси за NAT"
         ],
         "zh": [
-          "反向代理服务器",
-          "负载均衡",
-          "DNS 加密",
-          "协议切换"
+          "强制 IP 策略",
+          "启用 smux",
+          "启用 XTLS direct",
+          "为 NAT 节点反代"
         ]
       },
-      "correct_index": 0
+      "correct_index": 3
     },
     {
       "id": 7,
@@ -183,29 +183,29 @@
       },
       "answers": {
         "en": [
-          "stats",
-          "log",
           "metrics",
+          "log",
+          "stats",
           "enableStats"
         ],
         "ru": [
-          "stats",
-          "log",
           "metrics",
+          "log",
+          "stats",
           "enableStats"
         ],
         "zh": [
-          "stats",
-          "log",
           "metrics",
+          "log",
+          "stats",
           "enableStats"
         ]
       },
-      "correct_index": 0
+      "correct_index": 2
     }
   ],
   "dialogs": {
-    "language_selection": "{name}, выберите язык / choose language / 选择语言:",
+    "language_selection": "{name}, выберите язык, у вас есть 5 минут, чтобы ответить на это сообщение / choose a language, you have 5 minutes to reply to this message / 请选择语言，您有 5 分钟时间回复此消息:",
     "language_set": {
       "en": "{name}, language set to English. Starting quiz...",
       "ru": "{name}, язык установлен на Русский. Запускаем тест...",
@@ -242,9 +242,9 @@
       "zh": "在私信中参加测验"
     },
     "quiz_instruction": {
-      "en": "To take the quiz, click the button below and start the bot in PM.",
-      "ru": "Чтобы пройти опрос, нажмите на кнопку ниже и начните диалог с ботом в ЛС.",
-      "zh": "要参加测验，请点击下面的按钮并在私信中启动机器人。"
+      "en": "To take the quiz, click the button below and start the bot in PM. You have 5 minutes to start the quiz.",
+      "ru": "Чтобы пройти опрос, нажмите на кнопку ниже и начните диалог с ботом в ЛС. У вас есть 5 минут, чтобы начать квиз.",
+      "zh": "要参加测验，请点击下面的按钮并在私信中启动机器人。您有 5 分钟时间开始测验。"
     },
     "blocked_message": {
       "en": "You have been blocked for 24 hours. Try again tomorrow.",
