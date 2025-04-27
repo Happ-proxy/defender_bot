@@ -1,6 +1,6 @@
 import logging
 from datetime import datetime
-from typing import Union, Optional
+from typing import Union, Optional, List, Dict, Any
 
 import asyncpg
 import aiomysql
@@ -70,6 +70,13 @@ async def init_db(pool: PoolType) -> None:
                     thread_id BIGINT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 );
+                CREATE TABLE IF NOT EXISTS custom_commands (
+                    command_name VARCHAR(100),
+                    argument VARCHAR(255),
+                    response_text TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    PRIMARY KEY (command_name, argument)
+                );
                 CREATE INDEX IF NOT EXISTS idx_banned_users_banned_until 
                 ON banned_users (banned_until);
                 """
@@ -102,6 +109,17 @@ async def init_db(pool: PoolType) -> None:
                         message_id BIGINT,
                         thread_id BIGINT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    )
+                    """
+                )
+                await cur.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS custom_commands (
+                        command_name VARCHAR(100),
+                        argument VARCHAR(255),
+                        response_text TEXT,
+                        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                        PRIMARY KEY (command_name, argument)
                     )
                     """
                 )
@@ -305,3 +323,145 @@ async def remove_active_poll(pool: PoolType, poll_id: str) -> None:
                 await cur.execute(
                     "DELETE FROM active_polls WHERE poll_id = %s", (poll_id,)
                 )
+
+
+async def add_custom_command(
+    pool: PoolType, command_name: str, argument: str
+) -> bool:
+    """Добавить новую команду в БД."""
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                INSERT INTO custom_commands (command_name, argument)
+                VALUES ($1, $2)
+                ON CONFLICT (command_name, argument) DO NOTHING
+                """,
+                command_name,
+                argument,
+            )
+            return await conn.fetchval(
+                "SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = $1 AND argument = $2)",
+                command_name,
+                argument,
+            )
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    INSERT INTO custom_commands (command_name, argument)
+                    VALUES (%s, %s)
+                    ON DUPLICATE KEY UPDATE command_name = command_name
+                    """,
+                    (command_name, argument),
+                )
+                await cur.execute(
+                    """
+                    SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = %s AND argument = %s)
+                    """,
+                    (command_name, argument),
+                )
+                result = await cur.fetchone()
+                return bool(result[0])
+
+
+async def update_command_text(
+    pool: PoolType, command_name: str, argument: str, response_text: str
+) -> bool:
+    """Обновить текст ответа для команды."""
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            await conn.execute(
+                """
+                UPDATE custom_commands
+                SET response_text = $3
+                WHERE command_name = $1 AND argument = $2
+                """,
+                command_name,
+                argument,
+                response_text,
+            )
+            return await conn.fetchval(
+                "SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = $1 AND argument = $2 AND response_text = $3)",
+                command_name,
+                argument,
+                response_text,
+            )
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    """
+                    UPDATE custom_commands
+                    SET response_text = %s
+                    WHERE command_name = %s AND argument = %s
+                    """,
+                    (response_text, command_name, argument),
+                )
+                await cur.execute(
+                    """
+                    SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = %s AND argument = %s AND response_text = %s)
+                    """,
+                    (command_name, argument, response_text),
+                )
+                result = await cur.fetchone()
+                return bool(result[0])
+
+
+async def delete_custom_command(
+    pool: PoolType, command_name: str, argument: str
+) -> bool:
+    """Удалить команду из БД."""
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            await conn.execute(
+                "DELETE FROM custom_commands WHERE command_name = $1 AND argument = $2",
+                command_name,
+                argument,
+            )
+            return not await conn.fetchval(
+                "SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = $1 AND argument = $2)",
+                command_name,
+                argument,
+            )
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "DELETE FROM custom_commands WHERE command_name = %s AND argument = %s",
+                    (command_name, argument),
+                )
+                await cur.execute(
+                    """
+                    SELECT EXISTS(SELECT 1 FROM custom_commands WHERE command_name = %s AND argument = %s)
+                    """,
+                    (command_name, argument),
+                )
+                result = await cur.fetchone()
+                return not bool(result[0])
+
+
+async def get_all_custom_commands(pool: PoolType) -> List[Dict[str, Any]]:
+    """Получить все команды из БД."""
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            rows = await conn.fetch(
+                "SELECT command_name, argument, response_text FROM custom_commands"
+            )
+            return [dict(row) for row in rows]
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "SELECT command_name, argument, response_text FROM custom_commands"
+                )
+                rows = await cur.fetchall()
+                return [
+                    {
+                        "command_name": row[0],
+                        "argument": row[1],
+                        "response_text": row[2],
+                    }
+                    for row in rows
+                ]

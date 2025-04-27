@@ -6,7 +6,8 @@ from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, F
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
 from .start import start_handler
-from .message import message_handler, docs_handler
+from .message import message_handler
+from .custom_commands import add_command_handler, add_text_handler, delete_command_handler, list_commands_handler, execute_custom_command
 
 
 # Пользовательский фильтр для проверки, что отправитель не бот
@@ -47,12 +48,6 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         lambda c: c.data.startswith("lang_"),
     )
 
-    dp.message.register(
-        docs_handler,
-        ChatTypeGroup(),
-        Command(commands=["docs", "info"])
-    )
-
     # Сообщения в группах и супергруппах (не от ботов)
     dp.message.register(
         partial(message_handler, bot=bot, pool=pool),
@@ -65,3 +60,27 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
 
     # События опросов
     dp.poll.register(partial(poll_handler, dp=dp, bot=bot, pool=pool))
+
+    # Команды для управления пользовательскими командами
+    dp.message.register(
+        partial(add_command_handler, pool=pool),
+        Command(commands=["addcommand"]),
+    )
+    dp.message.register(
+        partial(add_text_handler, pool=pool),
+        Command(commands=["addtext"]),
+    )
+    dp.message.register(
+        partial(delete_command_handler, pool=pool),
+        Command(commands=["del"]),
+    )
+    dp.message.register(
+        partial(list_commands_handler, pool=pool),
+        Command(commands=["list"]),
+    )
+
+    # Обработка пользовательских команд
+    dp.message.register(
+        partial(execute_custom_command, pool=pool),
+        lambda message: message.text and message.text.startswith("/"),
+    )
