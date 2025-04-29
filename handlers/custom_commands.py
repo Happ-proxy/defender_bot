@@ -56,6 +56,7 @@ async def delete_command_handler(message: types.Message, pool: PoolType) -> None
     else:
         await message.reply(f"Команда {command_name} с аргументом {argument} не найдена.")
 
+
 async def list_commands_handler(message: types.Message, pool: PoolType) -> None:
     """Обработка команды /list для отображения всех команд и их аргументов."""
     commands = await get_all_custom_commands(pool)

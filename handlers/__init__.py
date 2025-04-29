@@ -3,6 +3,8 @@ from functools import partial
 from aiogram import Dispatcher, types
 from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, Filter
 
+from handlers.filters.user_passed import UserPassedFilter
+
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
 from .start import start_handler
@@ -53,6 +55,7 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         partial(message_handler, bot=bot, pool=pool),
         ChatTypeGroup(),
         IsNotBot(),
+        UserPassedFilter(pool=pool)
     )
 
     # Ответы на опросы
