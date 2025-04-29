@@ -20,15 +20,6 @@ async def language_selection_handler(
 ) -> None:
     """Запрашивает у новых пользователей выбор языка с таймаутом."""
     current_state = await state.get_state()
-    if current_state in [UserState.waiting_for_language, UserState.answering_quiz]:
-        return
-
-    if (
-        message.chat.id != config.ALLOWED_CHAT_ID
-        or await check_user_passed(pool, message.from_user.id)
-        or message.from_user.is_bot
-    ):
-        return
 
     thread_id = message.message_thread_id if message.message_thread_id else None
     user_mention = message.from_user.mention_html()
