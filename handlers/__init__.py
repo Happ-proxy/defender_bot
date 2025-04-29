@@ -3,7 +3,7 @@ from functools import partial
 from aiogram import Dispatcher, types
 from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, Filter
 
-from handlers.filters.user_passed import UserPassedFilter
+from filters.user_passed import UserPassedFilter
 
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
