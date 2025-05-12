@@ -6,6 +6,7 @@ from aiogram.filters import CommandObject
 from aiogram.fsm.context import FSMContext
 
 from config import config
+from database import check_user_passed
 from utils.message_utils import get_docs_argument, get_docs_arguments
 from .states import UserState
 from .language import language_selection_handler
@@ -56,7 +57,6 @@ async def message_handler(
     if not user_data.get("first_message_id"):
         await state.update_data(first_message_id=message.message_id)
 
-    # Удаляем сообщения во время выбора языка
     if current_state == UserState.waiting_for_language:
         try:
             await bot.delete_message(message.chat.id, message.message_id)
@@ -74,6 +74,9 @@ async def message_handler(
             logging.info(f"Удалено сообщение {message.message_id} во время квиза")
         except TelegramBadRequest:
             logging.warning(f"Не удалось удалить сообщение {message.message_id}")
+        return
+
+    if current_state in [UserState.waiting_for_language, UserState.answering_quiz]:
         return
 
     await language_selection_handler(message, state, bot, pool)
