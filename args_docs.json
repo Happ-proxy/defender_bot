@@ -1,0 +1,12 @@
+{
+  "args": {
+    "routing": {
+      "en": "You will find all the information about setting up routing in our documentation https://www.happ.su/main/dev-docs/routing",
+      "ru": "Всю информацию о настройке маршрутизации вы найдете в нашей документации https://www.happ.su/main/ru/dev-docs/routing"
+    },
+    "docs1": {
+      "en": "en text1",
+      "ru": "ru text1"
+    }
+  }
+}
