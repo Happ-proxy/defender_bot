@@ -1,0 +1,44 @@
+
+services:
+  mysql:
+    image: mysql:latest
+    container_name: mysql_defender_bot
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - "${DB_PORT}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  defender_bot:
+    build: .
+    container_name: python_defender_bot
+    depends_on:
+      - mysql
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      DB_TYPE: ${DB_TYPE}
+      DB_HOST: mysql
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_SOCKET: ${DB_SOCKET}
+      ALLOWED_CHAT_ID: ${ALLOWED_CHAT_ID}
+      DB_PORT: ${DB_PORT}
+      LANGUAGE_SELECTION_TIMEOUT: ${LANGUAGE_SELECTION_TIMEOUT}
+      QUIZ_ANSWER_TIMEOUT: ${QUIZ_ANSWER_TIMEOUT}
+      MESSAGE_DELETE_DELAY_CORRECT: ${MESSAGE_DELETE_DELAY_CORRECT}
+      MESSAGE_DELETE_DELAY_INCORRECT: ${MESSAGE_DELETE_DELAY_INCORRECT}
+      MESSAGE_DELETE_DELAY_TIMEOUT: ${MESSAGE_DELETE_DELAY_TIMEOUT}
+      DEFAULT_MESSAGE_DELETE_DELAY: ${DEFAULT_MESSAGE_DELETE_DELAY}
+      MUTE_DURATION: ${MUTE_DURATION}
+      UNBAN_DELAY: ${UNBAN_DELAY}
+      DB_DELETE_DELAY: ${DB_DELETE_DELAY}
+      CLEANUP_INTERVAL: ${CLEANUP_INTERVAL}
+    networks:
+      - default
+
+
+volumes:
+  mysql_data:
