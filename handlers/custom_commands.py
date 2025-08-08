@@ -40,6 +40,7 @@ async def add_text_handler(message: types.Message, pool: PoolType) -> None:
     else:
         await message.reply(f"Команда {command_name} с аргументом {argument} не найдена.")
 
+
 async def delete_command_handler(message: types.Message, pool: PoolType) -> None:
     """Обработка команды /del для удаления команды."""
     args = message.text.split(maxsplit=2)

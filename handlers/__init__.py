@@ -3,6 +3,7 @@ from functools import partial
 from aiogram import Dispatcher, types
 from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, Filter
 
+from filters.check_admin import IsAdmin
 from filters.user_passed import UserPassedFilter
 
 from .language import language_selection_handler, language_callback_handler
@@ -69,14 +70,17 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
     dp.message.register(
         partial(add_command_handler, pool=pool),
         Command(commands=["addcommand"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(add_text_handler, pool=pool),
         Command(commands=["addtext"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(delete_command_handler, pool=pool),
         Command(commands=["del"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(list_commands_handler, pool=pool),
@@ -86,6 +90,7 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
     dp.message.register(
         partial(pass_command_handler, pool=pool),
         Command(commands=["pass"]),
+        IsAdmin()
     )
 
     # Обработка пользовательских команд
