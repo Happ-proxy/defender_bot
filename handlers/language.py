@@ -19,7 +19,6 @@ async def language_selection_handler(
     pool: PoolType,
 ) -> None:
     """Запрашивает у новых пользователей выбор языка с таймаутом."""
-    current_state = await state.get_state()
 
     thread_id = message.message_thread_id if message.message_thread_id else None
     user_mention = message.from_user.mention_html()

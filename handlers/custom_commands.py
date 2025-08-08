@@ -1,6 +1,12 @@
+import html
 import logging
-from aiogram import types
-from database import PoolType, add_custom_command, update_command_text, delete_custom_command, get_all_custom_commands
+from contextlib import suppress
+
+from aiogram import types, Dispatcher, Bot
+from aiogram.fsm.context import FSMContext
+
+from database import PoolType, add_custom_command, update_command_text, delete_custom_command, get_all_custom_commands, \
+    delete_active_pool_by_user_id, delete_user_from_passed, mark_user_passed
 
 
 async def add_command_handler(message: types.Message, pool: PoolType) -> None:
@@ -119,5 +125,34 @@ async def execute_custom_command(message: types.Message, pool: PoolType) -> None
     logging.info(f"Команда {command_name} с аргументом {argument} не найдена")
 
 
-async def pass_command_handler(message: types.Message, pool: PoolType) -> None:
-    pass
+async def pass_command_handler(message: types.Message, pool: PoolType,
+                               dp: Dispatcher, bot: Bot
+                               ) -> None:
+    if not message.reply_to_message:
+        await message.answer("Используйте команду реплеем на сообщение")
+        return
+
+    user_id = message.reply_to_message.from_user.id
+    user_state = dp.fsm.get_context(
+        bot=bot, chat_id=message.chat.id, user_id=user_id
+    )
+    data = await user_state.get_data()
+    if data.get("bot_messages"):
+        for message_id in data["bot_messages"]:
+            with suppress(Exception):
+                await bot.delete_message(message.chat.id, message_id)
+    await user_state.clear()
+    await delete_active_pool_by_user_id(pool, message.chat.id, user_id)
+    await mark_user_passed(pool, user_id)
+    await message.answer(f"Пользователь {html.escape(message.from_user.first_name)} пропущен без квиза")
+
+
+async def quiz_again_command_handler(message: types.Message, pool: PoolType) -> None:
+    if not message.reply_to_message:
+        await message.answer("Используйте команду реплеем на сообщение")
+        return
+
+    user_id = message.reply_to_message.from_user.id
+    await delete_user_from_passed(pool, user_id)
+    await message.answer(f"Пользователь {html.escape(message.from_user.first_name)} забыт")
+

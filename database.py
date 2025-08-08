@@ -249,6 +249,18 @@ async def delete_user_from_db(pool: PoolType, user_id: int) -> None:
     logging.info(f"User {user_id} deleted from database")
 
 
+async def delete_user_from_passed(pool: PoolType, user_id: int) -> None:
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            await conn.execute("DELETE FROM passed_users WHERE user_id = $1", user_id)
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "DELETE FROM passed_users WHERE user_id = %s", (user_id,)
+                )
+    logging.info(f"User {user_id} deleted from passed")
+
 async def add_active_poll(
     pool: PoolType,
     poll_id: str,
@@ -310,6 +322,20 @@ async def get_active_poll(pool: PoolType, poll_id: str) -> Optional[dict]:
                         "thread_id": row[3],
                     }
                 return None
+
+
+async def delete_active_pool_by_user_id(pool: PoolType, chat_id: int, user_id: int) -> Optional[dict]:
+    """Получить данные активного опроса по poll_id."""
+    if config.DB_TYPE == "postgres":
+        async with pool.acquire() as conn:
+            await conn.execute("DELETE FROM active_polls WHERE chat_id = $1 AND user_id = $2", chat_id, user_id)
+    elif config.DB_TYPE == "mysql":
+        async with pool.acquire() as conn:
+            async with conn.cursor() as cur:
+                await cur.execute(
+                    "DELETE FROM active_polls WHERE chat_id = %s AND user_id = %s",
+                    (chat_id, user_id)
+                )
 
 
 async def remove_active_poll(pool: PoolType, poll_id: str) -> None:

@@ -1,6 +1,5 @@
 from aiogram.filters import BaseFilter
 from aiogram.types import TelegramObject
-import logging
 
 from config import config
 
