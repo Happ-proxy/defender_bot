@@ -1,12 +1,14 @@
 import logging
 
 from aiogram import types, Bot
+from aiogram.dispatcher.event.bases import SkipHandler
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.filters import CommandObject
 from aiogram.fsm.context import FSMContext
 
 from config import config
 from utils.message_utils import get_docs_argument, get_docs_arguments
+from utils.ttl import admin_replies
 from .states import UserState
 from .language import language_selection_handler
 
@@ -42,12 +44,19 @@ async def docs_handler(message: types.Message, command: CommandObject, bot: Bot)
         reply_to_message_id=message_to_reply)
 
 
+async def admin_handler_messages(message: types.Message):
+    if message.from_user.id in config.BOT_ADMINS and message.reply_to_message is not None:
+        admin_replies[message.reply_to_message.message_id] = True
+    raise SkipHandler()
+
+
 async def message_handler(
         message: types.Message, state: FSMContext, bot: Bot, pool
 ) -> None:
     """Обработка сообщений пользователя."""
     if message.from_user.is_bot or message.chat.id != config.ALLOWED_CHAT_ID:
         return
+    logging.info("тест1")
 
     current_state = await state.get_state()
 

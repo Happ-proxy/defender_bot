@@ -9,7 +9,7 @@ from filters.user_passed import UserPassedFilter
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
 from .start import start_handler
-from .message import message_handler
+from .message import message_handler, admin_handler_messages
 from .custom_commands import add_command_handler, add_text_handler, delete_command_handler, list_commands_handler, \
     execute_custom_command, pass_command_handler, quiz_again_command_handler
 
@@ -58,6 +58,11 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         ChatTypeGroup(),
         IsNotBot(),
         UserPassedFilter(pool=pool)
+    )
+    dp.message.register(
+        partial(admin_handler_messages, bot=bot),
+        ChatTypeGroup(),
+        IsAdmin(),
     )
 
     # Ответы на опросы

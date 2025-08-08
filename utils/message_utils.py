@@ -7,6 +7,8 @@ from aiogram.exceptions import TelegramBadRequest
 import logging
 import pathlib
 
+from utils.ttl import admin_replies
+
 
 @lru_cache()
 def read_file_args_docs():
@@ -17,6 +19,10 @@ def read_file_args_docs():
 
 async def delete_message(bot: Bot, chat_id: int, message_id: int, delay: int) -> None:
     """Удаление сообщения с задержкой."""
+    logging.info(message_id)
+    logging.info(admin_replies)
+    if message_id in admin_replies.keys():
+        return
     await asyncio.sleep(delay)
     try:
         await bot.delete_message(chat_id, message_id)

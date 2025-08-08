@@ -3,7 +3,6 @@ import logging
 from contextlib import suppress
 
 from aiogram import types, Dispatcher, Bot
-from aiogram.fsm.context import FSMContext
 
 from database import PoolType, add_custom_command, update_command_text, delete_custom_command, get_all_custom_commands, \
     delete_active_pool_by_user_id, delete_user_from_passed, mark_user_passed
