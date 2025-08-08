@@ -60,7 +60,7 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         UserPassedFilter(pool=pool)
     )
     dp.message.register(
-        partial(admin_handler_messages, bot=bot),
+        partial(admin_handler_messages),
         ChatTypeGroup(),
         IsAdmin(),
     )
