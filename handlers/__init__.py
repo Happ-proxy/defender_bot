@@ -3,13 +3,15 @@ from functools import partial
 from aiogram import Dispatcher, types
 from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, Filter
 
+from filters.check_admin import IsAdmin
 from filters.user_passed import UserPassedFilter
 
 from .language import language_selection_handler, language_callback_handler
 from .quiz import group_message_handler, poll_answer_handler, poll_handler
 from .start import start_handler
-from .message import message_handler
-from .custom_commands import add_command_handler, add_text_handler, delete_command_handler, list_commands_handler, execute_custom_command
+from .message import message_handler, admin_handler_messages
+from .custom_commands import add_command_handler, add_text_handler, delete_command_handler, list_commands_handler, \
+    execute_custom_command, pass_command_handler, quiz_again_command_handler
 
 
 # Пользовательский фильтр для проверки, что отправитель не бот
@@ -57,6 +59,11 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         IsNotBot(),
         UserPassedFilter(pool=pool)
     )
+    dp.message.register(
+        partial(admin_handler_messages),
+        ChatTypeGroup(),
+        IsAdmin(),
+    )
 
     # Ответы на опросы
     dp.poll_answer.register(partial(poll_answer_handler, dp=dp, bot=bot, pool=pool))
@@ -68,18 +75,32 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
     dp.message.register(
         partial(add_command_handler, pool=pool),
         Command(commands=["addcommand"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(add_text_handler, pool=pool),
         Command(commands=["addtext"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(delete_command_handler, pool=pool),
         Command(commands=["del"]),
+        IsAdmin()
     )
     dp.message.register(
         partial(list_commands_handler, pool=pool),
         Command(commands=["list"]),
+    )
+
+    dp.message.register(
+        partial(pass_command_handler, pool=pool, dp=dp),
+        Command(commands=["pass"]),
+        IsAdmin(),
+    )
+    dp.message.register(
+        partial(quiz_again_command_handler, pool=pool),
+        Command(commands=["quiz-again"]),
+        IsAdmin(),
     )
 
     # Обработка пользовательских команд

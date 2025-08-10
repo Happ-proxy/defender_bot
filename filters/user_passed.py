@@ -5,6 +5,7 @@ from aiogram.types import Message
 from config import config
 from database import check_user_passed
 
+
 class UserPassedFilter(BaseFilter):
     def __init__(self, pool: PollType):
         self.pool = pool

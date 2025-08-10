@@ -13,6 +13,7 @@ class Config(BaseModel):
     """Конфигурация бота с валидацией через pydantic."""
 
     BOT_TOKEN: str
+    BOT_ADMINS: list
     DB_TYPE: str  # "mysql" или "postgres"
     DB_USER: str
     DB_PASSWORD: str
@@ -38,7 +39,11 @@ class Config(BaseModel):
 
 # Загружаем и валидируем конфигурацию
 try:
-    config = Config(**{key: os.getenv(key) for key in Config.__annotations__})
+    raw_env = {key: os.getenv(key) for key in Config.__annotations__}
+    if raw_env.get("BOT_ADMINS"):
+        raw_env["BOT_ADMINS"] = json.loads(raw_env["BOT_ADMINS"])
+
+    config = Config(**raw_env)
 except ValidationError as e:
     raise ValueError(f"Ошибка в конфигурации: {e}")
 

@@ -4,6 +4,7 @@ from config import config, docs   # docs мы только что экспорт
 import logging
 logger = logging.getLogger(__name__)
 
+
 async def docs_handler(message: types.Message) -> None:
     # Игнорируем лишние чаты и ботов
     if (message.chat.id != config.ALLOWED_CHAT_ID) or message.from_user.is_bot:
