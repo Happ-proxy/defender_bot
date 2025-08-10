@@ -143,7 +143,7 @@ async def pass_command_handler(message: types.Message, pool: PoolType,
     await user_state.clear()
     await delete_active_pool_by_user_id(pool, message.chat.id, user_id)
     await mark_user_passed(pool, user_id)
-    await message.answer(f"Пользователь {html.escape(message.from_user.first_name)} пропущен без квиза")
+    await message.answer(f"Пользователь {html.escape(message.reply_to_message.from_user.first_name)} пропущен без квиза")
 
 
 async def quiz_again_command_handler(message: types.Message, pool: PoolType) -> None:
@@ -153,5 +153,5 @@ async def quiz_again_command_handler(message: types.Message, pool: PoolType) -> 
 
     user_id = message.reply_to_message.from_user.id
     await delete_user_from_passed(pool, user_id)
-    await message.answer(f"Пользователь {html.escape(message.from_user.first_name)} забыт")
+    await message.answer(f"Пользователь {html.escape(message.reply_to_message.from_user.first_name)} забыт")
 
