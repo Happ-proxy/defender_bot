@@ -80,6 +80,7 @@ async def execute_custom_command(message: types.Message, pool: PoolType) -> None
     """Обработка пользовательских команд."""
     if not message.text:
         return
+    logging.info(message.from_user)
 
     args = message.text.split(maxsplit=2)
     command_name = args[0].strip()
