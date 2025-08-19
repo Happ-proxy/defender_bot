@@ -10,4 +10,8 @@ class IsAdmin(BaseFilter):
         self.admin_ids = config.BOT_ADMINS
 
     async def __call__(self, obj: TelegramObject) -> bool:
-        return obj.from_user.id in self.admin_ids
+        check_obj = obj.from_user
+        if obj.sender_chat is not None:
+            check_obj = obj.sender_chat
+
+        return check_obj.id in self.admin_ids
