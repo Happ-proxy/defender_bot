@@ -91,16 +91,21 @@ async def language_selection_timeout(
     first_message_id = user_data.get("first_message_id")
     bot_messages = user_data.get("bot_messages", [])
 
-    # Отправляем сообщение о таймауте в чат
+    # Отправляем сообщение о таймауте в ответ на первое сообщение пользователя
     timeout_text = dialogs["language_timeout"]["ru"].format(
         name=f'<a href="tg://user?id={user_id}">{user_id}</a>'
     )
-    timeout_msg = await bot.send_message(
-        chat_id=chat_id,
-        text=timeout_text,
-        parse_mode="HTML",
-        message_thread_id=thread_id,
-    )
+    try:
+        timeout_msg = await bot.send_message(
+            chat_id=chat_id,
+            text=timeout_text,
+            parse_mode="HTML",
+            message_thread_id=thread_id,
+            reply_parameters=types.ReplyParameters(message_id=first_message_id),
+        )
+    except TelegramBadRequest as e:
+        logging.warning(f"Failed to send timeout message: {e}")
+        return
 
     # Моментально удаляем сообщения в чате
     if first_message_id:

@@ -83,10 +83,12 @@ async def poll_answer_handler(
     if selected_option == correct_index:
         await state.set_state(UserState.completed)
         await mark_user_passed(pool, user_id)
+        first_message_id = user_data.get("first_message_id")
         result_msg = await bot.send_message(
             chat_id=chat_id,
             text=f"✅ {dialogs['correct'][lang]}",
             parse_mode="HTML",
+            reply_parameters=types.ReplyParameters(message_id=first_message_id) if first_message_id else None,
         )
         group_chat_id = user_data.get("group_chat_id")
         bot_messages = user_data.get("bot_messages", [])
@@ -126,10 +128,12 @@ async def poll_answer_handler(
             f"❌ {dialogs['incorrect'][lang].format(name=poll_answer.user.mention_html())} "
             f"{dialogs['blocked_message'][lang]}"
         )
+        first_message_id = user_data.get("first_message_id")
         result_msg = await bot.send_message(
             chat_id=chat_id,
             text=combined_message,
             parse_mode="HTML",
+            reply_parameters=types.ReplyParameters(message_id=first_message_id) if first_message_id else None,
         )
         group_chat_id = user_data.get("group_chat_id")
         first_message_id = user_data.get("first_message_id")
@@ -211,14 +215,17 @@ async def poll_handler(
 
     if not user_data.get("has_answered", False):
         lang = user_data.get("language", "en")
+        user_link = f'<a href="tg://user?id={user_id}">{user_id}</a>'
         combined_message = (
-            f"⏰ {dialogs['timeout'][lang].format(name=f'<a href=\"tg://user?id={user_id}\">{user_id}</a>')} "
+            f"⏰ {dialogs['timeout'][lang].format(name=user_link)} "
             f"{dialogs['blocked_message'][lang]}"
         )
+        first_message_id = user_data.get("first_message_id")
         timeout_msg = await bot.send_message(
             chat_id,
             combined_message,
             parse_mode="HTML",
+            reply_parameters=types.ReplyParameters(message_id=first_message_id) if first_message_id else None,
         )
         group_chat_id = user_data.get("group_chat_id")
         first_message_id = user_data.get("first_message_id")
