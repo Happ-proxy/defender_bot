@@ -17,6 +17,7 @@ from database import (
 from utils.moderation import ban_user_after_timeout
 from utils.message_utils import delete_message
 from .states import UserState
+from .language import get_user_language
 
 
 async def group_message_handler(
@@ -39,7 +40,10 @@ async def group_message_handler(
     ):
         return
 
-    from .language import language_selection_handler
+    from .start import send_poll_to_pm
+
+    lang = get_user_language(user)
+    thread_id = update.message_thread_id if update.message_thread_id else None
 
     message = types.Message(
         message_id=0,
@@ -47,8 +51,35 @@ async def group_message_handler(
         from_user=user,
         date=update.date,
     )
-    await state.update_data(first_message_id=message.message_id)
-    await language_selection_handler(message, state, bot=bot, pool=pool)
+    await state.update_data(
+        first_message_id=message.message_id,
+        language=lang,
+        thread_id=thread_id,
+        group_chat_id=update.chat.id,
+    )
+
+    button_text = dialogs["quiz_button"][lang]
+    instruction_text = dialogs["quiz_instruction"][lang]
+
+    bot_username = (await bot.get_me()).username
+    quiz_button_msg = await bot.send_message(
+        chat_id=update.chat.id,
+        text=instruction_text,
+        reply_markup=types.InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    types.InlineKeyboardButton(
+                        text=button_text,
+                        url=f"https://t.me/{bot_username}?start=quiz_{user.id}_{lang}_{update.chat.id}",
+                    )
+                ]
+            ]
+        ),
+        message_thread_id=thread_id,
+        reply_parameters=types.ReplyParameters(message_id=message.message_id),
+    )
+
+    await state.update_data(bot_messages=[quiz_button_msg.message_id])
 
 
 async def poll_answer_handler(
