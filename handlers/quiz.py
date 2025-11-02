@@ -21,62 +21,69 @@ from .language import get_user_language
 
 
 async def group_message_handler(
-    update: types.ChatMemberUpdated,
+    message: types.Message,
     state: FSMContext,
     bot: Bot,
     pool: PoolType,
     **kwargs,
 ) -> None:
-    """Обработка новых участников."""
-    if update.chat.id != config.ALLOWED_CHAT_ID or update.new_chat_member.user.is_bot:
+    """Обработка первого сообщения пользователя в группе."""
+    if message.chat.id != config.ALLOWED_CHAT_ID or message.from_user.is_bot:
         return
 
-    user = update.new_chat_member.user
-    if (
-        update.old_chat_member.status not in ("left", "kicked")
-        or update.new_chat_member.status != "member"
-        or await check_user_passed(pool, user.id)
-        or await check_user_banned(pool, user.id)
-    ):
+    user = message.from_user
+    passed = await check_user_passed(pool, user.id)
+    banned = await check_user_banned(pool, user.id)
+    
+    # Если пользователь уже прошел квиз или забанен - пропускаем
+    if passed or banned:
         return
-
-    from .start import send_poll_to_pm
-
+    
+    # Получаем состояние пользователя
+    user_state = await state.get_state()
+    
+    # Если это уже не первое сообщение - удаляем
+    if user_state is not None:
+        await delete_message(bot, message.chat.id, message.message_id, delay=0)
+        return
+    
     lang = get_user_language(user)
-    thread_id = update.message_thread_id if update.message_thread_id else None
-
-    message = types.Message(
-        message_id=0,
-        chat=update.chat,
-        from_user=user,
-        date=update.date,
-    )
+    thread_id = message.message_thread_id
+    
     await state.update_data(
-        first_message_id=message.message_id,
         language=lang,
         thread_id=thread_id,
-        group_chat_id=update.chat.id,
+        group_chat_id=message.chat.id,
+        first_message_id=message.message_id,
     )
-
+    
+    await state.set_state(UserState.answering_quiz)
+    
     button_text = dialogs["quiz_button"][lang]
     instruction_text = dialogs["quiz_instruction"][lang]
+    
+    logging.info(f"First message from user {user.id} in group {message.chat.id}")
 
     bot_username = (await bot.get_me()).username
+    user_mention = user.mention_html()
+    greeting_text = f"{user_mention}, {instruction_text}"
+    
     quiz_button_msg = await bot.send_message(
-        chat_id=update.chat.id,
-        text=instruction_text,
+        chat_id=message.chat.id,
+        text=greeting_text,
+        parse_mode="HTML",
         reply_markup=types.InlineKeyboardMarkup(
             inline_keyboard=[
                 [
                     types.InlineKeyboardButton(
                         text=button_text,
-                        url=f"https://t.me/{bot_username}?start=quiz_{user.id}_{lang}_{update.chat.id}",
+                        url=f"https://t.me/{bot_username}?start=quiz_{user.id}_{lang}_{message.chat.id}",
                     )
                 ]
             ]
         ),
-        message_thread_id=thread_id,
         reply_parameters=types.ReplyParameters(message_id=message.message_id),
+        message_thread_id=thread_id,
     )
 
     await state.update_data(bot_messages=[quiz_button_msg.message_id])
@@ -114,12 +121,10 @@ async def poll_answer_handler(
     if selected_option == correct_index:
         await state.set_state(UserState.completed)
         await mark_user_passed(pool, user_id)
-        first_message_id = user_data.get("first_message_id")
         result_msg = await bot.send_message(
             chat_id=chat_id,
             text=f"✅ {dialogs['correct'][lang]}",
             parse_mode="HTML",
-            reply_parameters=types.ReplyParameters(message_id=first_message_id) if first_message_id else None,
         )
         group_chat_id = user_data.get("group_chat_id")
         bot_messages = user_data.get("bot_messages", [])
@@ -159,12 +164,10 @@ async def poll_answer_handler(
             f"❌ {dialogs['incorrect'][lang].format(name=poll_answer.user.mention_html())} "
             f"{dialogs['blocked_message'][lang]}"
         )
-        first_message_id = user_data.get("first_message_id")
         result_msg = await bot.send_message(
             chat_id=chat_id,
             text=combined_message,
             parse_mode="HTML",
-            reply_parameters=types.ReplyParameters(message_id=first_message_id) if first_message_id else None,
         )
         group_chat_id = user_data.get("group_chat_id")
         first_message_id = user_data.get("first_message_id")
