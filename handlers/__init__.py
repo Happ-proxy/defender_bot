@@ -1,7 +1,7 @@
 from functools import partial
 
 from aiogram import Dispatcher, types
-from aiogram.filters import Command, ChatMemberUpdatedFilter, JOIN_TRANSITION, Filter
+from aiogram.filters import Command, Filter
 
 from filters.check_admin import IsAdmin
 from filters.user_passed import UserPassedFilter
@@ -43,9 +43,10 @@ def setup_handlers(dp: Dispatcher, bot, pool) -> None:
         Command(commands=["start"]),
     )
 
-    dp.chat_member.register(
+    dp.message.register(
         partial(group_message_handler, bot=bot, pool=pool),
-        ChatMemberUpdatedFilter(member_status_changed=JOIN_TRANSITION),
+        ChatTypeGroup(),
+        IsNotBot(),
     )
 
     dp.message.register(
