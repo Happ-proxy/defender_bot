@@ -1,4 +1,5 @@
 import asyncio
+import asyncio
 import logging
 import random
 
@@ -69,13 +70,12 @@ async def send_poll_to_pm(
     shuffled_answers = [answers[i] for i in indices]
     new_correct_index = indices.index(correct_index)
 
-    # Отправляем приветственное сообщение отдельно
+    # Отправляем приветственное сообщение в ответ на сообщение /start
     greeting_text = dialogs["greeting"][lang].format(
         name=message.from_user.mention_html()
     )
     try:
-        greeting_msg = await bot.send_message(
-            chat_id=message.from_user.id,
+        greeting_msg = await message.reply(
             text=greeting_text,
             parse_mode="HTML",
         )
@@ -87,17 +87,16 @@ async def send_poll_to_pm(
     try:
         poll = await bot.send_poll(
             chat_id=message.from_user.id,
-            question=question["question"][lang],  # Только текст вопроса
+            question=question["question"][lang],
             options=shuffled_answers,
             type="quiz",
             correct_option_id=new_correct_index,
-            open_period=config.QUIZ_ANSWER_TIMEOUT,  # 30 секунд
+            open_period=config.QUIZ_ANSWER_TIMEOUT,
             is_anonymous=False,
         )
         logging.info(f"Опрос отправлен пользователю {message.from_user.id} в ЛС")
     except Exception as e:
         logging.warning(f"Не удалось отправить опрос в ЛС: {e}")
-        # Удаляем приветственное сообщение, если опрос не отправился
         await bot.delete_message(message.from_user.id, greeting_msg.message_id)
         return
 
@@ -108,7 +107,7 @@ async def send_poll_to_pm(
         message.from_user.id,
         message.chat.id,
         poll.message_id,
-        None,  # thread_id в ЛС не нужен
+        None,
     )
     logging.info(
         f"Опрос {poll.poll.id} зарегистрирован для пользователя {message.from_user.id}"
@@ -119,19 +118,18 @@ async def send_poll_to_pm(
     await state.update_data(
         quiz_poll_id=poll.poll.id,
         quiz_message_id=poll.message_id,
-        greeting_message_id=greeting_msg.message_id,  # Сохраняем ID приветствия
+        greeting_message_id=greeting_msg.message_id,
         correct_index=new_correct_index,
         has_answered=False,
         chat_id=message.from_user.id,
         language=lang,
     )
 
-    # Запускаем таймер для проверки таймаута
-    asyncio.create_task(check_poll_timeout(bot, state, message.from_user.id, dp, pool))
+    asyncio.create_task(check_poll_timeout(bot, state, message.from_user.id, dp, pool, message))
 
 
 async def check_poll_timeout(
-    bot: Bot, state: FSMContext, user_id: int, dp, pool: PoolType
+    bot: Bot, state: FSMContext, user_id: int, dp, pool: PoolType, original_message: types.Message = None
 ) -> None:
     """Проверяет, ответил ли пользователь на опрос за отведенное время."""
     await asyncio.sleep(config.QUIZ_ANSWER_TIMEOUT)
@@ -146,13 +144,19 @@ async def check_poll_timeout(
         poll_id = user_data.get("quiz_poll_id")
 
         try:
+            user_link = f'<a href="tg://user?id={user_id}">{user_id}</a>'
             combined_message = (
-                f"⏰ {dialogs['timeout'][lang].format(name=f'<a href=\"tg://user?id={user_id}\">{user_id}</a>')} "
+                f"⏰ {dialogs['timeout'][lang].format(name=user_link)} "
                 f"{dialogs['blocked_message'][lang]}"
             )
-            timeout_msg = await bot.send_message(
-                user_id, combined_message, parse_mode="HTML"
-            )
+            if original_message:
+                timeout_msg = await original_message.reply(
+                    combined_message, parse_mode="HTML"
+                )
+            else:
+                timeout_msg = await bot.send_message(
+                    user_id, combined_message, parse_mode="HTML"
+                )
         except TelegramBadRequest as e:
             logging.error(
                 f"Не удалось отправить сообщение о таймауте в ЛС {user_id}: {e}"
